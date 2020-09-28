@@ -7,7 +7,7 @@ import moment from 'moment'
 import Swal  from 'sweetalert2'
 import { useDispatch, useSelector } from 'react-redux';
 import { uiCloseModal } from '../../actions/ui';
-import { eventAddNew, eventClearActiveEvent, eventUpdated } from '../../actions/events';
+import { eventClearActiveEvent, eventStartAddNew, eventStartUpdate } from '../../actions/events';
 
 const customStyles = {
     content : {
@@ -20,7 +20,9 @@ const customStyles = {
     }
   };
   
-  Modal.setAppElement('#root')
+  if( process.env.NODE_ENV !== 'test'){
+      Modal.setAppElement('#root')
+  }
   
   const now = moment().minutes(0).seconds(0).add(1, 'hours');
   const nowPlus1 = now.clone().add(1, 'hours');
@@ -93,7 +95,6 @@ export const CalendarModal = () => {
         const momentEnd = moment( end );
         
         if( momentStart.isSameOrAfter( momentEnd )){
-            console.log('Fecha 2 debe ser mayor')
             return Swal.fire('Error', 'La fecha fin debe ser mayor a la fecha de inicio', 'error')
         }
         
@@ -103,17 +104,10 @@ export const CalendarModal = () => {
         
         if( activeEvent ){
             dispatch(
-                eventUpdated( formValues )
+                eventStartUpdate( formValues )
             )
         } else {
-            dispatch( eventAddNew({
-                ...formValues,
-                id: new Date().getTime(),
-                user: {
-                    _id: "123",
-                    name: "Orlin Alvarado"
-                }
-            }));
+            dispatch( eventStartAddNew(formValues));
         }
         
         setTitleValid(true);
@@ -128,6 +122,7 @@ export const CalendarModal = () => {
           closeTimeoutMS={ 200 }
           className="modal"
           overlayClassName="modal-fondo"
+          ariaHideApp={ !process.env.NODE_ENV === 'test'}
         >
             <h1> { (activeEvent) ? 'Editar evento' : 'Nuevo evento' } </h1>
             <hr />
